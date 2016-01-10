@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Todo</string>
+    <string name="title_todo_detail">Todo Detail</string>
+</resources>
