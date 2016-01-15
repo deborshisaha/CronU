@@ -39,6 +39,12 @@ public class TodoListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
 
     @Override
+    protected void onResume(){
+        super.onResume();
+        ((SimpleItemRecyclerViewAdapter)recyclerView.getAdapter()).notifyDataSetChanged();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_todo_list);
@@ -48,6 +54,16 @@ public class TodoListActivity extends AppCompatActivity {
         toolbar.setTitle(getTitle());
 
         FloatingActionButton addTodoFab = (FloatingActionButton) findViewById(R.id.add);
+        addTodoFab.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View view) {
+                Context context = view.getContext();
+                Intent intent = new Intent(context, TodoFormActivity.class);
+                context.startActivity(intent);
+            }
+        });
+        /*
         addTodoFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -119,7 +135,7 @@ public class TodoListActivity extends AppCompatActivity {
                 builder.show();
             }
         });
-
+        */
         FloatingActionButton deleteAllTodosFab = (FloatingActionButton) findViewById(R.id.delete_all);
         deleteAllTodosFab.setOnClickListener(new View.OnClickListener() {
 
@@ -182,21 +198,10 @@ public class TodoListActivity extends AppCompatActivity {
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (mTwoPane) {
-                        Bundle arguments = new Bundle();
-                        arguments.putString(TodoDetailFragment.TODO_ITEM_ID, holder.toDoItem.getUniqueId());
-                        TodoDetailFragment fragment = new TodoDetailFragment();
-                        fragment.setArguments(arguments);
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.todo_detail_container, fragment)
-                                .commit();
-                    } else {
-                        Context context = v.getContext();
-                        Intent intent = new Intent(context, TodoDetailActivity.class);
-                        intent.putExtra(TodoDetailFragment.TODO_ITEM_ID, holder.toDoItem.getUniqueId());
-
-                        context.startActivity(intent);
-                    }
+                    Context context = v.getContext();
+                    Intent intent = new Intent(context, TodoFormActivity.class);
+                    intent.putExtra(TodoDetailFragment.TODO_ITEM_ID, holder.toDoItem);
+                    context.startActivity(intent);
                 }
             });
         }

@@ -1,5 +1,6 @@
 package design.semicolon.todo.models;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import design.semicolon.todo.manager.ToDoManager;
@@ -7,7 +8,7 @@ import design.semicolon.todo.manager.ToDoManager;
 /**
  * Created by dsaha on 1/10/16.
  */
-public class ToDo {
+public class ToDo implements Serializable {
 
     private String id;
     private String title;
@@ -28,15 +29,26 @@ public class ToDo {
         return title;
     }
 
+    public void setDescription(String d) {
+        this.description = d;
+    }
+
+    public void setTitle(String t) {
+        this.title = t;
+    }
+
     public String getUniqueId() {
         return id;
     }
 
     public ToDo( String title, String description, Date date) {
-        this.id = new ToDoManager.ToDoUniqueIdentifierGenerator().sessionId();
         this.title = title;
         this.description = description;
         this.dueDate = date;
+    }
+
+    public void assignUniqueId() {
+        this.id = new ToDoManager.ToDoUniqueIdentifierGenerator().sessionId();
     }
 
     @Override

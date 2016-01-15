@@ -13,8 +13,8 @@ import design.semicolon.todo.models.ToDo;
 
 public class ToDoManager {
 
-    private static final List<ToDo> toDoArrayList = new ArrayList<ToDo>();
-    private static final Map<String, ToDo> toDoHashMap = new HashMap<String, ToDo>();
+    private static List<ToDo> toDoArrayList = new ArrayList<ToDo>();
+    private static Map<String, ToDo> toDoHashMap = new HashMap<String, ToDo>();
 
     public static List<ToDo> listToDos() {
         return toDoArrayList;
@@ -26,16 +26,20 @@ public class ToDoManager {
         return true;
     }
 
-    public static ToDo updateTodo(ToDo updateToDo) {
-        return new ToDo("Title","Description", new Date());
+    public static ToDo persistToDo(ToDo updateToDo) {
+
+        if (updateToDo.getUniqueId() == null) {
+            updateToDo.assignUniqueId();
+            ToDoManager.createTodo(updateToDo);
+        } else {
+            ToDoManager.updateTodo(updateToDo);
+        }
+
+        return updateToDo;
     }
 
     public static boolean deleteTodo(ToDo deleteTodo) {
         return true;
-    }
-
-    public static boolean createTodo(ToDo createdToDo) {
-        return addItem(createdToDo);
     }
 
     public static ToDo getToDoItemById(Object key) {
@@ -45,7 +49,7 @@ public class ToDoManager {
     public static final class ToDoUniqueIdentifierGenerator {
         private SecureRandom random = new SecureRandom();
         public String sessionId() {
-            return new BigInteger(130, random).toString(32);
+            return new BigInteger(100, random).toString(32);
         }
     }
 
@@ -53,5 +57,25 @@ public class ToDoManager {
         toDoArrayList.add(todo);
         toDoHashMap.put(todo.getUniqueId(), todo);
         return true;
+    }
+
+    private static boolean createTodo(ToDo createdToDo) {
+        return addItem(createdToDo);
+    }
+
+    private static ToDo updateTodo(ToDo updateToDo) {
+
+        for (ToDo todo:toDoArrayList) {
+            if (todo.getUniqueId().equals(updateToDo.getUniqueId())){
+                toDoArrayList.remove(todo);
+                toDoArrayList.add(updateToDo);
+                break;
+            }
+        }
+
+        toDoHashMap.remove(updateToDo.getUniqueId());
+        toDoHashMap.put(updateToDo.getUniqueId(), updateToDo);
+
+        return updateToDo;
     }
 }

@@ -1,4 +1,9 @@
 <resources>
-    <string name="app_name">Todo</string>
-    <string name="title_todo_detail">Todo Detail</string>
+    <string name="app_name">To-do</string>
+    <string name="title_todo_detail">To-do Detail</string>
+    <string name="title_activity_todo_form">New To-do</string>
+    <string name="hint_todo_name">To-do name</string>
+    <string name="hint_todo_description">More about To-do (optional)</string>
+    <string name="action_save_todo">Save To-do</string>
+    <string name="empty_todo_name">To-do name cannot be empty</string>
 </resources>
