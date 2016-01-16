@@ -35,7 +35,6 @@ import design.semicolon.todo.models.ToDo;
 
 public class TodoListActivity extends AppCompatActivity {
 
-    private boolean mTwoPane;
     private RecyclerView recyclerView;
 
     @Override
@@ -147,7 +146,7 @@ public class TodoListActivity extends AppCompatActivity {
                 alertDialogBuilder.setNegativeButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface arg0, int arg1) {
-                        if (ToDoManager.deleteAll()) {
+                        if (ToDoManager.getInstance(TodoListActivity.this).deleteAll()) {
                             ((SimpleItemRecyclerViewAdapter)recyclerView.getAdapter()).notifyDataSetChanged();
                             Toast.makeText(TodoListActivity.this, "All Todos were erased", Toast.LENGTH_SHORT).show();
                         }
@@ -161,12 +160,7 @@ public class TodoListActivity extends AppCompatActivity {
 
 
         recyclerView = (RecyclerView) findViewById(R.id.todo_list);
-
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(ToDoManager.listToDos()));
-
-        if (findViewById(R.id.todo_detail_container) != null) {
-            mTwoPane = true;
-        }
+        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(ToDoManager.getInstance(TodoListActivity.this).listToDos()));
     }
 
     public class SimpleItemRecyclerViewAdapter
@@ -193,7 +187,7 @@ public class TodoListActivity extends AppCompatActivity {
 
             // Setting the content
             holder.mTitleView.setText(this.todoItems.get(position).getTitle());
-            holder.mSubtitleView.setText(this.todoItems.get(position).getDueDate());
+            holder.mSubtitleView.setText(this.todoItems.get(position).getDueDateReadableFormat());
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override

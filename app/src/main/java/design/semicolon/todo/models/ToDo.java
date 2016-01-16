@@ -15,11 +15,13 @@ public class ToDo implements Serializable {
     private String description;
     private Date dueDate;
 
-    public String getDueDate() {
+    public String getDueDateReadableFormat() {
         SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM dd, yy");
         SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm a");
         return dateFormatter.format(this.dueDate)+ " at " + timeFormatter.format(this.dueDate);
     }
+
+    public Date getDueDate() { return dueDate; }
 
     public String getDescription() {
         return description;
