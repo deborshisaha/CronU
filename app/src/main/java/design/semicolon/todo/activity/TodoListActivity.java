@@ -217,7 +217,6 @@ public class TodoListActivity extends AppCompatActivity {
                 mView = view;
                 mTitleView = (TextView) view.findViewById(R.id.title);
                 mSubtitleView = (TextView) view.findViewById(R.id.subtitle);
-                //mTodoIcon = (ImageView) view.findViewById(R.id.image);
 
                 mTrashTodoButton = (ImageButton) view.findViewById(R.id.delete);
                 mTrashTodoButton.setOnClickListener(new View.OnClickListener() {

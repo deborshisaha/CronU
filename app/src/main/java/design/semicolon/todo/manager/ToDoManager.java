@@ -175,14 +175,14 @@ public class ToDoManager {
         alarmManager.set(AlarmManager.RTC, targetCal.getTimeInMillis(), pendingIntent);
     }
 
-    private void fireNotification(ToDo todo) {
-
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this.ctxt);
-
-        mBuilder.setContentTitle(todo.getTitle());
-        mBuilder.setContentText(todo.getDescription());
-
-        NotificationManager todoNotificationManager = (NotificationManager)this.ctxt.getSystemService(Context.NOTIFICATION_SERVICE);
-        todoNotificationManager.notify(todo.getUniqueId(), 0, mBuilder.build());
-    }
+//    private void fireNotification(ToDo todo) {
+//
+//        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this.ctxt);
+//
+//        mBuilder.setContentTitle(todo.getTitle());
+//        mBuilder.setContentText(todo.getDescription());
+//
+//        NotificationManager todoNotificationManager = (NotificationManager)this.ctxt.getSystemService(Context.NOTIFICATION_SERVICE);
+//        todoNotificationManager.notify(todo.getUniqueId(), 0, mBuilder.build());
+//    }
 }
