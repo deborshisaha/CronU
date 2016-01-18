@@ -6,4 +6,6 @@
     <string name="hint_todo_description">More about To-do (optional)</string>
     <string name="action_save_todo">Save To-do</string>
     <string name="empty_todo_name">To-do name cannot be empty</string>
+    <string name="hint_todo_calendar">Pick date and time</string>
+
 </resources>
