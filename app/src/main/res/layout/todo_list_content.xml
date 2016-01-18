@@ -1,40 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="80dp"
-    android:orientation="horizontal"
+
+    android:layout_marginRight="5dp"
+    android:layout_marginLeft="5dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginBottom="0dp"
+
     android:background="#FFFFFF">
 
-    <ImageView
-        android:id="@+id/image"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_gravity="center"
-        android:layout_margin="7dp"
-        android:src = "@drawable/timer" />
 
+    <ImageButton
+        android:id="@+id/mark_done"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_gravity="center"
+        android:layout_centerVertical="true"
+        android:paddingLeft = "5dp"
+        android:paddingRight = "5dp"
+        android:layout_margin="7dp" />
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center">
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/mark_done"
+        android:layout_margin="7dp" >
 
         <TextView
             android:id="@+id/title"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/text_margin"
             android:textSize="@dimen/title_text_size"
-            android:textAppearance="?attr/textAppearanceListItem" />
+            android:textAppearance="?attr/textAppearanceListItem"/>
 
         <TextView
             android:id="@+id/subtitle"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/text_margin"
             android:textSize="@dimen/subtitle_text_size"
-            android:textAppearance="?attr/textAppearanceListItem" />
-
+            android:textAppearance="?attr/textAppearanceListItem"/>
     </LinearLayout>
-</LinearLayout>
+
+    <ImageButton
+        android:id="@+id/delete"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="center"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:scaleType="fitCenter"
+        android:layout_margin="7dp"
+        android:src="@drawable/trash_red"
+        android:padding = "10dp"
+        android:background="#FFFFFF"/>
+
+</RelativeLayout>

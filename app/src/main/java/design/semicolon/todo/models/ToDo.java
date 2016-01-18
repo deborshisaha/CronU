@@ -14,6 +14,7 @@ public class ToDo implements Serializable {
     private String title;
     private String description;
     private Date dueDate;
+    private boolean done;
 
     public String getDueDateReadableFormat() {
         SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM dd, yy");
@@ -21,14 +22,8 @@ public class ToDo implements Serializable {
         return dateFormatter.format(this.dueDate)+ " at " + timeFormatter.format(this.dueDate);
     }
 
-    public Date getDueDate() { return dueDate; }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getTitle() {
-        return title;
+    public void setDone(boolean done) {
+        this.done = done;
     }
 
     public void setDescription(String d) {
@@ -39,6 +34,18 @@ public class ToDo implements Serializable {
         this.title = t;
     }
 
+    public void setDate (Date date) { this.dueDate = date; }
+
+    public boolean markedAsDone() { return this.done; }
+
+    public Date getDueDate() { return dueDate; }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getTitle() { return title; }
+    
     public String getUniqueId() {
         return id;
     }

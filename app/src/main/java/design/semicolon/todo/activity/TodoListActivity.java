@@ -1,31 +1,22 @@
 package design.semicolon.todo.activity;
 
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.DatePicker;
-import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import design.semicolon.todo.R;
@@ -62,6 +53,7 @@ public class TodoListActivity extends AppCompatActivity {
                 context.startActivity(intent);
             }
         });
+
         /*
         addTodoFab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -198,6 +190,12 @@ public class TodoListActivity extends AppCompatActivity {
                     context.startActivity(intent);
                 }
             });
+
+            if (holder.toDoItem.markedAsDone()) {
+                holder.mMarkTodoButton.setBackgroundResource(R.drawable.checked_checkbox);
+            } else {
+                holder.mMarkTodoButton.setBackgroundResource(R.drawable.unchecked_checkbox);
+            }
         }
 
         @Override
@@ -209,6 +207,9 @@ public class TodoListActivity extends AppCompatActivity {
             public final View mView;
             public final TextView mSubtitleView;
             public final TextView mTitleView;
+            public final ImageButton mTrashTodoButton;
+            public final ImageButton mMarkTodoButton;
+
             public ToDo toDoItem;
 
             public ViewHolder(View view) {
@@ -216,6 +217,32 @@ public class TodoListActivity extends AppCompatActivity {
                 mView = view;
                 mTitleView = (TextView) view.findViewById(R.id.title);
                 mSubtitleView = (TextView) view.findViewById(R.id.subtitle);
+                //mTodoIcon = (ImageView) view.findViewById(R.id.image);
+
+                mTrashTodoButton = (ImageButton) view.findViewById(R.id.delete);
+                mTrashTodoButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ToDoManager.getInstance().deleteTodoHavingKey(toDoItem.getUniqueId());
+                        ((SimpleItemRecyclerViewAdapter)recyclerView.getAdapter()).notifyDataSetChanged();
+                    }
+                });
+
+                mMarkTodoButton = (ImageButton) view.findViewById(R.id.mark_done);
+                mMarkTodoButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //ToDoManager.getInstance().deleteTodoHavingKey(toDoItem.getUniqueId());
+                        if (toDoItem.markedAsDone()) {
+                            ToDoManager.getInstance().markAsUndone(toDoItem);
+                        } else {
+                            ToDoManager.getInstance().markAsDone(toDoItem);
+                        }
+
+                        // Refresh
+                        ((SimpleItemRecyclerViewAdapter) recyclerView.getAdapter()).notifyDataSetChanged();
+                    }
+                });
             }
 
             @Override
