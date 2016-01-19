@@ -3,6 +3,8 @@ package design.semicolon.todo.models;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import design.semicolon.todo.classes.AlarmNotificationReceiver;
 import design.semicolon.todo.manager.ToDoManager;
 
 /**
@@ -15,6 +17,16 @@ public class ToDo implements Serializable {
     private String description;
     private Date dueDate;
     private boolean done;
+
+    public AlarmNotificationReceiver getReceiver() {
+        return receiver;
+    }
+
+    public void setReceiver(AlarmNotificationReceiver receiver) {
+        this.receiver = receiver;
+    }
+
+    private AlarmNotificationReceiver receiver;
 
     public String getDueDateReadableFormat() {
         SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM dd, yy");

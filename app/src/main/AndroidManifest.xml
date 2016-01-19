@@ -26,7 +26,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="design.semicolon.todo.activity.TodoListActivity" />
         </activity>
-        <receiver android:name=".AlarmNotificationReceiver"></receiver>
+        <receiver android:name=".classes.AlarmNotificationReceiver"/>
     </application>
 
 </manifest>

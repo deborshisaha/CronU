@@ -22,14 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import design.semicolon.todo.AlarmNotificationReceiver;
+import design.semicolon.todo.activity.TodoListActivity;
+import design.semicolon.todo.classes.AlarmNotificationReceiver;
 import design.semicolon.todo.fragment.TodoDetailFragment;
 import design.semicolon.todo.models.ToDo;
 
 public class ToDoManager {
 
     private static ToDoManager instance = new ToDoManager();
-
+    private AlarmNotificationReceiver mAlarmNotificationReceiver;
     private ToDoManager() {}
 
     public static ToDoManager getInstance (Context context) {
@@ -135,11 +136,12 @@ public class ToDoManager {
 
         for (ToDo todo:toDoArrayList) {
             if (todo.getUniqueId().equals(updateToDo.getUniqueId())){
-                toDoArrayList.remove(todo);
-                removeAlarm(todo);
 
+                deactivateAlarm(todo);
+                toDoArrayList.remove(todo);
+
+                updateToDo.setReceiver(setAlarm(updateToDo));
                 toDoArrayList.add(updateToDo);
-                setAlarm(updateToDo);
 
                 break;
             }
@@ -151,38 +153,27 @@ public class ToDoManager {
         return updateToDo;
     }
 
-    private void removeAlarm(ToDo todo) {
-
-//        Calendar targetCal = new GregorianCalendar();
-//        targetCal.setTime(todo.getDueDate());
-//
-//        AlarmManager alarmManager = (AlarmManager) this.ctxt.getSystemService(Context.ALARM_SERVICE);
-//        alarmManager.set(AlarmManager.RTC_WAKEUP, targetCal.getTimeInMillis(), pendingIntent);
-
+    private void deactivateAlarm(ToDo todo) {
+        this.ctxt.unregisterReceiver(todo.getReceiver());
     }
 
-    private void setAlarm(final ToDo todo) {
+    private AlarmNotificationReceiver setAlarm(final ToDo todo) {
 
         Calendar targetCal = new GregorianCalendar();
         targetCal.setTime(todo.getDueDate());
 
-        Intent intent = new Intent(this.ctxt, AlarmNotificationReceiver.class);
+        Intent intent = new Intent("design.semicolon.todo.AlarmNotificationReceiver."+todo.getUniqueId());
         intent.putExtra(TodoDetailFragment.TODO_ITEM_ID, todo);
+
+        IntentFilter filter = new IntentFilter("design.semicolon.todo.AlarmNotificationReceiver."+todo.getUniqueId());
+        AlarmNotificationReceiver receiver = new AlarmNotificationReceiver((TodoListActivity)this.ctxt);
+        this.ctxt.registerReceiver(receiver, filter);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this.ctxt, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         AlarmManager alarmManager = (AlarmManager) this.ctxt.getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC, targetCal.getTimeInMillis(), pendingIntent);
-    }
 
-//    private void fireNotification(ToDo todo) {
-//
-//        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this.ctxt);
-//
-//        mBuilder.setContentTitle(todo.getTitle());
-//        mBuilder.setContentText(todo.getDescription());
-//
-//        NotificationManager todoNotificationManager = (NotificationManager)this.ctxt.getSystemService(Context.NOTIFICATION_SERVICE);
-//        todoNotificationManager.notify(todo.getUniqueId(), 0, mBuilder.build());
-//    }
+        return receiver;
+    }
 }
