@@ -98,7 +98,7 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
 
     public void fireNotification(ToDo todo) {
 
-        String title = todo.getTitle();
+        String title = todo.getName();
         String subTitle = todo.getDescription();
 
         if (subTitle == null || subTitle.length() == 0) {
@@ -124,26 +124,6 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
         mNotificationManager.notify(0, mBuilder.build());
     }
 
-    /*
-    public void fireDialog(ToDo todo) {
-
-        String title = todo.getTitle();
-        String subTitle = todo.getDescription();
-
-        if (subTitle == null || subTitle.length() == 0) {
-            subTitle = "Due on "+ todo.getDueDateReadableFormat();
-        }
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(TodoListActivity.this);
-        alertDialogBuilder.setTitle(title);
-        alertDialogBuilder.setMessage(subTitle);
-        alertDialogBuilder.setCancelable(true);
-
-        AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
-    }*/
-
-
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
@@ -167,7 +147,7 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
             holder.toDoItem = this.todoItems.get(position);
 
             // Setting the content
-            holder.mTitleView.setText(this.todoItems.get(position).getTitle());
+            holder.mTitleView.setText(this.todoItems.get(position).getName());
             holder.mSubtitleView.setText(this.todoItems.get(position).getDueDateReadableFormat());
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -211,7 +191,7 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
                 mTrashTodoButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ToDoManager.getInstance().deleteTodoHavingKey(toDoItem.getUniqueId());
+                        ToDoManager.getInstance().deleteTodo(toDoItem);
                         ((SimpleItemRecyclerViewAdapter)recyclerView.getAdapter()).notifyDataSetChanged();
                     }
                 });

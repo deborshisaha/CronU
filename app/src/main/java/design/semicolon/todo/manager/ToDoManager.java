@@ -4,12 +4,16 @@ import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.activeandroid.query.Delete;
+import com.activeandroid.query.Select;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -31,24 +35,43 @@ public class ToDoManager {
 
     private static ToDoManager instance = new ToDoManager();
     private AlarmNotificationReceiver mAlarmNotificationReceiver;
-    private ToDoManager() {}
 
     public static ToDoManager getInstance (Context context) {
         instance.ctxt = context;
+
+        // Populate data structures
         return instance;
     }
 
-    public static ToDoManager getInstance () { return instance; }
+    public static ToDoManager getInstance () {
+        return instance;
+    }
+
+    private ToDoManager () { }
 
     private Context ctxt;
-    private static List<ToDo> toDoArrayList = new ArrayList<ToDo>();
-    private static Map<String, ToDo> toDoHashMap = new HashMap<String, ToDo>();
+    private static List<ToDo> toDoArrayList = null;
+    private static Map<String, ToDo> toDoHashMap = null;
 
     /**********************************************************************
      * Public Methods
      **********************************************************************/
     public List<ToDo> listToDos() {
 
+        if (toDoArrayList == null) {
+            List<ToDo> temp = new Select().from(ToDo.class).orderBy("due_date ASC").execute();
+            toDoArrayList = new ArrayList<ToDo>(temp);
+        }
+
+        if (toDoHashMap == null) {
+
+            toDoHashMap = new HashMap<String, ToDo>();
+
+            for (ToDo todo:toDoArrayList) {
+                toDoHashMap.put(todo.getUniqueId(),todo);
+                setAlarm(todo);
+            }
+        }
 
         return toDoArrayList;
     }
@@ -70,6 +93,9 @@ public class ToDoManager {
     public boolean deleteAll() {
         toDoArrayList.clear();
         toDoHashMap.clear();
+
+        new Delete().from(ToDo.class).execute();
+
         return true;
     }
 
@@ -86,17 +112,11 @@ public class ToDoManager {
     }
 
     public boolean deleteTodo(ToDo deleteTodo) {
-        return true;
-    }
 
-    public boolean deleteTodoHavingKey(String key) {
-        toDoHashMap.remove(key);
-        for (ToDo todo: toDoArrayList) {
-            if (todo.getUniqueId().equals(key)) {
-                toDoArrayList.remove(todo);
-                break;
-            }
-        }
+        deleteTodoHavingKey(deleteTodo.getUniqueId());
+
+        deleteTodo.delete();
+
         return true;
     }
 
@@ -115,9 +135,25 @@ public class ToDoManager {
      * Private
      **********************************************************************/
 
+    private boolean deleteTodoHavingKey(String key) {
+        toDoHashMap.remove(key);
+        for (ToDo todo: toDoArrayList) {
+            if (todo.getUniqueId().equals(key)) {
+                toDoArrayList.remove(todo);
+                break;
+            }
+        }
+        return true;
+    }
+
     private boolean addItem(ToDo todo) {
+
+        // In memory for fast retrieval
         toDoArrayList.add(todo);
         toDoHashMap.put(todo.getUniqueId(), todo);
+
+        // Persist
+        todo.save();
 
         return true;
     }
@@ -139,9 +175,11 @@ public class ToDoManager {
 
                 deactivateAlarm(todo);
                 toDoArrayList.remove(todo);
+                todo.delete();
 
                 updateToDo.setReceiver(setAlarm(updateToDo));
                 toDoArrayList.add(updateToDo);
+                updateToDo.save();
 
                 break;
             }
@@ -154,7 +192,12 @@ public class ToDoManager {
     }
 
     private void deactivateAlarm(ToDo todo) {
-        this.ctxt.unregisterReceiver(todo.getReceiver());
+
+        AlarmNotificationReceiver alarmNotificationReceiver = todo.getReceiver();
+
+        if (alarmNotificationReceiver != null) {
+            this.ctxt.unregisterReceiver(todo.getReceiver());
+        }
     }
 
     private AlarmNotificationReceiver setAlarm(final ToDo todo) {

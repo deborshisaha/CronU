@@ -1,5 +1,9 @@
 package design.semicolon.todo.models;
 
+import com.activeandroid.Model;
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
+
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -10,12 +14,22 @@ import design.semicolon.todo.manager.ToDoManager;
 /**
  * Created by dsaha on 1/10/16.
  */
-public class ToDo implements Serializable {
+@Table(name = "ToDos", id = "_id")
+public class ToDo extends Model implements Serializable {
 
+    @Column(name = "id", unique = true, onUniqueConflict = Column.ConflictAction.REPLACE)
     private String id;
-    private String title;
+
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "description")
     private String description;
+
+    @Column(name = "due_date")
     private Date dueDate;
+
+    @Column(name = "done")
     private boolean done;
 
     public AlarmNotificationReceiver getReceiver() {
@@ -34,6 +48,8 @@ public class ToDo implements Serializable {
         return dateFormatter.format(this.dueDate)+ " at " + timeFormatter.format(this.dueDate);
     }
 
+    public String getName() { return name; }
+
     public void setDone(boolean done) {
         this.done = done;
     }
@@ -42,8 +58,8 @@ public class ToDo implements Serializable {
         this.description = d;
     }
 
-    public void setTitle(String t) {
-        this.title = t;
+    public void setName(String t) {
+        this.name = t;
     }
 
     public void setDate (Date date) { this.dueDate = date; }
@@ -55,18 +71,16 @@ public class ToDo implements Serializable {
     public String getDescription() {
         return description;
     }
-
-    public String getTitle() { return title; }
     
-    public String getUniqueId() {
-        return id;
-    }
+    public String getUniqueId() { return id; }
 
     public ToDo( String title, String description, Date date) {
-        this.title = title;
+        this.name = title;
         this.description = description;
         this.dueDate = date;
     }
+
+    public ToDo() {}
 
     public void assignUniqueId() {
         this.id = new ToDoManager.ToDoUniqueIdentifierGenerator().sessionId();
@@ -74,6 +88,7 @@ public class ToDo implements Serializable {
 
     @Override
     public String toString() {
-        return title;
+        return name;
     }
+
 }

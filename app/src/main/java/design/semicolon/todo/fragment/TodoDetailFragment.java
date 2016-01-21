@@ -33,7 +33,7 @@ public class TodoDetailFragment extends Fragment {
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
-                appBarLayout.setTitle(toDoItem.getTitle());
+                appBarLayout.setTitle(toDoItem.getName());
             }
         }
     }

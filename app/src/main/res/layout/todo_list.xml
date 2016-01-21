@@ -8,7 +8,7 @@
     android:layout_height="match_parent"
     android:layout_marginLeft="0dp"
     android:layout_marginRight="0dp"
-    android:background="#AAAAAA"
+    android:background="#EEEEEE"
     app:layoutManager="LinearLayoutManager"
     tools:context="design.semicolon.todo.TodoListActivity"
     tools:listitem="@layout/todo_list_content" />
