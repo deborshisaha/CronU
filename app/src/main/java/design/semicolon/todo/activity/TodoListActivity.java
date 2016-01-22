@@ -1,9 +1,11 @@
 package design.semicolon.todo.activity;
 
 import android.app.AlertDialog;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,11 +17,13 @@ import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -111,17 +115,18 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
                         .setContentTitle(title)
                         .setContentText(subTitle);
 
-        Intent resultIntent = new Intent(this, TodoListActivity.class);
+        Intent notificationIntent = new Intent(this, TodoFormActivity.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addParentStack(TodoListActivity.class);
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(resultPendingIntent);
-
+        PendingIntent notificationPendingIntent = PendingIntent.getActivity(this, 0,
+                notificationIntent, 0);
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(0, mBuilder.build());
+
+        Notification notification = mBuilder.build();
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+
+        mNotificationManager.notify(0, notification);
     }
 
     public class SimpleItemRecyclerViewAdapter
@@ -219,5 +224,4 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
             }
         }
     }
-
 }

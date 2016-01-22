@@ -38,8 +38,6 @@ public class ToDoManager {
 
     public static ToDoManager getInstance (Context context) {
         instance.ctxt = context;
-
-        // Populate data structures
         return instance;
     }
 
@@ -59,7 +57,7 @@ public class ToDoManager {
     public List<ToDo> listToDos() {
 
         if (toDoArrayList == null) {
-            List<ToDo> temp = new Select().from(ToDo.class).orderBy("due_date ASC").execute();
+            List<ToDo> temp = new Select().from(ToDo.class).orderBy("due_date DESC").execute();
             toDoArrayList = new ArrayList<ToDo>(temp);
         }
 
@@ -68,7 +66,7 @@ public class ToDoManager {
             toDoHashMap = new HashMap<String, ToDo>();
 
             for (ToDo todo:toDoArrayList) {
-                toDoHashMap.put(todo.getUniqueId(),todo);
+                toDoHashMap.put(todo.getUniqueId(), todo);
                 setAlarm(todo);
             }
         }
@@ -79,7 +77,11 @@ public class ToDoManager {
     public void markAsDone(ToDo todoItem) {
 
         ToDo todo = getToDoItemById(todoItem.getUniqueId());
+
+        // Persistence
         todo.setDone(true);
+
+        // Memory data structures
         ToDoManager.instance.updateTodo(todo);
     }
 
@@ -177,7 +179,12 @@ public class ToDoManager {
                 toDoArrayList.remove(todo);
                 todo.delete();
 
-                updateToDo.setReceiver(setAlarm(updateToDo));
+                if (!updateToDo.markedAsDone()) {
+                    updateToDo.setReceiver(setAlarm(updateToDo));
+                } else {
+                    updateToDo.setReceiver(null);
+                }
+
                 toDoArrayList.add(updateToDo);
                 updateToDo.save();
 
@@ -201,6 +208,12 @@ public class ToDoManager {
     }
 
     private AlarmNotificationReceiver setAlarm(final ToDo todo) {
+
+        Date rightNow = new Date();
+
+        if (rightNow.after(todo.getDueDate())) {
+            return null;
+        }
 
         Calendar targetCal = new GregorianCalendar();
         targetCal.setTime(todo.getDueDate());
