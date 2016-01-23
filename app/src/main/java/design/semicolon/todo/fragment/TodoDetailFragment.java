@@ -28,7 +28,7 @@ public class TodoDetailFragment extends Fragment {
 
         if (getArguments().containsKey(TODO_ITEM_ID)) {
 
-            toDoItem = ToDoManager.getInstance().getToDoItemById(getArguments().getString(TODO_ITEM_ID));
+            toDoItem = ToDoManager.getInstance().find(getArguments().getString(TODO_ITEM_ID));
 
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);

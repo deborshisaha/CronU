@@ -75,10 +75,10 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
                 alertDialogBuilder.setNegativeButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface arg0, int arg1) {
-                        if (ToDoManager.getInstance(TodoListActivity.this).deleteAll()) {
-                            ((SimpleItemRecyclerViewAdapter) recyclerView.getAdapter()).notifyDataSetChanged();
-                            Toast.makeText(TodoListActivity.this, "All Todos were erased", Toast.LENGTH_SHORT).show();
-                        }
+
+                        ToDoManager.getInstance(TodoListActivity.this).deleteAll();
+                        ((SimpleItemRecyclerViewAdapter) recyclerView.getAdapter()).notifyDataSetChanged();
+                        Toast.makeText(TodoListActivity.this, "All Todos were erased", Toast.LENGTH_SHORT).show();
                     }
                 });
 
