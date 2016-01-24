@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">To-do</string>
+    <string name="app_name">CronU</string>
     <string name="title_todo_detail">To-do Detail</string>
     <string name="title_activity_todo_form">New To-do</string>
     <string name="hint_todo_name">To-do name</string>
