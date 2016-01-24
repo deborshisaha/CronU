@@ -11,6 +11,6 @@ This is a simple "Todo" application for android codepath course starting Feb 201
  * Notification doesn't appear for done items
  * Ability to selectively delete an item
  * Ability to delete multiple items. These items can be:
- ** Delete items that have expired and are not done
- ** Delete items that were marked as done by the user
- ** Delete all items
+   ** Delete items that have expired and are not done
+   ** Delete items that were marked as done by the user
+   ** Delete all items
