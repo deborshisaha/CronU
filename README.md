@@ -1,4 +1,4 @@
-# ToDo
+# CronU - An app to make you do Cron job
 
 This is a simple "Todo" application for android codepath course starting Feb 2016. The app supports adding, editing and deleting of todo items. Enhancements include
 
