@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" tools:context=".activity.TodoFormActivity">
+    <item
+        android:id="@+id/edit_button"
+        android:icon="@drawable/pencil_tip"
+        app:showAsAction="ifRoom"
+        android:layout_width = "match_parent"
+        android:layout_height = "match_parent"
+        android:orderInCategory="0"/>
+</menu>
