@@ -12,4 +12,4 @@ This is a simple "Todo" application for android codepath course starting Feb 201
 * Ability to selectively delete an item
 * Ability to delete multiple items in group of either expired items, incomplete items or all items
 
-![alt tag](https://raw.githubusercontent.com/deborshisaha/CronU/CronU.gif)
+![alt tag](https://github.com/deborshisaha/CronU/blob/master/CronU.gif)
