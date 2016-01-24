@@ -6,6 +6,7 @@ import com.activeandroid.annotation.Table;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import design.semicolon.todo.classes.AlarmNotificationReceiver;
@@ -32,23 +33,26 @@ public class ToDo extends Model implements Serializable {
     @Column(name = "done")
     private boolean done;
 
-    public AlarmNotificationReceiver getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(AlarmNotificationReceiver receiver) {
-        this.receiver = receiver;
-    }
-
     private AlarmNotificationReceiver receiver;
 
     public String getDueDateReadableFormat() {
         SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM dd, yy");
-        SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm a");
+        SimpleDateFormat timeFormatter = new SimpleDateFormat("hh:mm a");
         return dateFormatter.format(this.dueDate)+ " at " + timeFormatter.format(this.dueDate);
     }
 
     public String getName() { return name; }
+
+    public boolean isPastDue () {
+
+        Calendar c = Calendar.getInstance();
+        c.setTime(getDueDate());
+        long time = c.getTimeInMillis();
+
+        return System.currentTimeMillis() > time;
+    }
+
+    public boolean isDone() { return done; }
 
     public void setDone(boolean done) {
         this.done = done;

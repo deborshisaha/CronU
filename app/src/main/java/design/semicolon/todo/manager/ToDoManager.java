@@ -35,6 +35,7 @@ public class ToDoManager {
 
     private static ToDoManager instance = new ToDoManager();
     private AlarmNotificationReceiver mAlarmNotificationReceiver;
+    private HashMap<String, AlarmNotificationReceiver> todoToAlarm = new HashMap<String, AlarmNotificationReceiver>();
 
     public static ToDoManager getInstance (Context context) {
         instance.ctxt = context;
@@ -48,82 +49,84 @@ public class ToDoManager {
     private ToDoManager () { }
 
     private Context ctxt;
-    private static List<ToDo> toDoArrayList = null;
-    private static Map<String, ToDo> toDoHashMap = null;
 
     /**********************************************************************
      * Public Methods
      **********************************************************************/
     public List<ToDo> listToDos() {
+        List<ToDo> list = new Select().from(ToDo.class).orderBy("due_date ASC").execute();
 
-        if (toDoArrayList == null) {
-            List<ToDo> temp = new Select().from(ToDo.class).orderBy("due_date DESC").execute();
-            toDoArrayList = new ArrayList<ToDo>(temp);
+        for (ToDo todo:list) {
+            activateAlarm(todo);
         }
 
-        if (toDoHashMap == null) {
+        return list;
+    }
 
-            toDoHashMap = new HashMap<String, ToDo>();
+    public ToDo find(String todoUniqueId) {
+        List<ToDo> todos = new Select().from(ToDo.class).where("id = ?", todoUniqueId).execute();
 
-            for (ToDo todo:toDoArrayList) {
-                toDoHashMap.put(todo.getUniqueId(), todo);
-                setAlarm(todo);
-            }
+        if (todos == null) {
+            return null;
         }
 
-        return toDoArrayList;
+        if (todos.size() == 1) {
+            return (ToDo)todos.get(0);
+        } else {
+            return null;
+        }
     }
 
     public void markAsDone(ToDo todoItem) {
 
-        ToDo todo = getToDoItemById(todoItem.getUniqueId());
+        todoItem.setDone(true);
 
-        // Persistence
-        todo.setDone(true);
+        // deactivate alarm
+        deactivateAlarm(todoItem);
 
-        // Memory data structures
-        ToDoManager.instance.updateTodo(todo);
+        todoItem.save();
     }
 
     public void markAsUndone(ToDo todoItem) {
 
-        ToDo todo = getToDoItemById(todoItem.getUniqueId());
-        todo.setDone(false);
-        ToDoManager.instance.updateTodo(todo);
+        todoItem.setDone(false);
+
+        activateAlarm(todoItem);
+
+        todoItem.save();
+
     }
 
-    public boolean deleteAll() {
-        toDoArrayList.clear();
-        toDoHashMap.clear();
+    public void deleteAll() {
+
+        List<ToDo> list = new Select().from(ToDo.class).execute();
+        deactivateAlarmsOfTodosInList(list);
 
         new Delete().from(ToDo.class).execute();
-
-        return true;
     }
 
-    public ToDo persistToDo(ToDo updateToDo) {
+    public void deleteExpiredOnes() {
 
-        if (updateToDo.getUniqueId() == null) {
-            updateToDo.assignUniqueId();
-            ToDoManager.instance.createTodo(updateToDo);
-        } else {
-            ToDoManager.instance.updateTodo(updateToDo);
-        }
+        List<ToDo> list = new Select().from(ToDo.class).where("due_date < ?", System.currentTimeMillis()).execute();
+        deactivateAlarmsOfTodosInList(list);
 
-        return updateToDo;
+        new Delete().from(ToDo.class).where("due_date < ?", System.currentTimeMillis()).execute();
+    }
+
+    public void deleteDoneItems(){
+        List<ToDo> list = new Select().from(ToDo.class).where("done = ?", true).execute();
+        deactivateAlarmsOfTodosInList(list);
+
+        new Delete().from(ToDo.class).where("done = ?", true).execute();
     }
 
     public boolean deleteTodo(ToDo deleteTodo) {
 
-        deleteTodoHavingKey(deleteTodo.getUniqueId());
-
+        // deactivate alarm
+        deactivateAlarm(deleteTodo);
         deleteTodo.delete();
 
         return true;
-    }
-
-    public ToDo getToDoItemById(Object key) {
-        return toDoHashMap.get(key);
     }
 
     public static final class ToDoUniqueIdentifierGenerator {
@@ -133,86 +136,54 @@ public class ToDoManager {
         }
     }
 
-    /**********************************************************************
-     * Private
-     **********************************************************************/
+    public void create(ToDo createdToDo) {
 
-    private boolean deleteTodoHavingKey(String key) {
-        toDoHashMap.remove(key);
-        for (ToDo todo: toDoArrayList) {
-            if (todo.getUniqueId().equals(key)) {
-                toDoArrayList.remove(todo);
-                break;
-            }
-        }
-        return true;
-    }
-
-    private boolean addItem(ToDo todo) {
-
-        // In memory for fast retrieval
-        toDoArrayList.add(todo);
-        toDoHashMap.put(todo.getUniqueId(), todo);
-
-        // Persist
-        todo.save();
-
-        return true;
-    }
-
-    private boolean createTodo(ToDo createdToDo) {
-
-        if (toDoHashMap.get(createdToDo.getUniqueId())!= null) {
-            return false;
+        if (createdToDo.getUniqueId() == null || createdToDo.getUniqueId().length() == 0) {
+            createdToDo.assignUniqueId();
         }
 
-        setAlarm(createdToDo);
-        return addItem(createdToDo);
+        createdToDo.save();
     }
 
-    private ToDo updateTodo(ToDo updateToDo) {
+    public ToDo update(ToDo updateToDo) {
 
-        for (ToDo todo:toDoArrayList) {
-            if (todo.getUniqueId().equals(updateToDo.getUniqueId())){
+        // deactivate alarm
+        deactivateAlarm(updateToDo);
 
-                deactivateAlarm(todo);
-                toDoArrayList.remove(todo);
-                todo.delete();
+        // activate alarm
+        activateAlarm(updateToDo);
 
-                if (!updateToDo.markedAsDone()) {
-                    updateToDo.setReceiver(setAlarm(updateToDo));
-                } else {
-                    updateToDo.setReceiver(null);
-                }
-
-                toDoArrayList.add(updateToDo);
-                updateToDo.save();
-
-                break;
-            }
-        }
-
-        toDoHashMap.remove(updateToDo.getUniqueId());
-        toDoHashMap.put(updateToDo.getUniqueId(), updateToDo);
+        updateToDo.save();
 
         return updateToDo;
     }
 
     private void deactivateAlarm(ToDo todo) {
 
-        AlarmNotificationReceiver alarmNotificationReceiver = todo.getReceiver();
+        AlarmNotificationReceiver alarmNotificationReceiver = todoToAlarm.get(todo.getUniqueId());
 
         if (alarmNotificationReceiver != null) {
-            this.ctxt.unregisterReceiver(todo.getReceiver());
+            this.ctxt.unregisterReceiver(alarmNotificationReceiver);
+            todoToAlarm.remove(todo.getUniqueId());
         }
     }
 
-    private AlarmNotificationReceiver setAlarm(final ToDo todo) {
+    private void deactivateAlarmsOfTodosInList(List<ToDo> listOfTodos) {
+        for (ToDo todo:listOfTodos) {
+            AlarmNotificationReceiver alarmNotificationReceiver = todoToAlarm.get(todo.getUniqueId());
+            if (alarmNotificationReceiver != null) {
+                this.ctxt.unregisterReceiver(alarmNotificationReceiver);
+                todoToAlarm.remove(todo.getUniqueId());
+            }
+        }
+    }
+
+    private void activateAlarm(final ToDo todo) {
 
         Date rightNow = new Date();
 
         if (rightNow.after(todo.getDueDate())) {
-            return null;
+            return;
         }
 
         Calendar targetCal = new GregorianCalendar();
@@ -230,6 +201,6 @@ public class ToDoManager {
         AlarmManager alarmManager = (AlarmManager) this.ctxt.getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC, targetCal.getTimeInMillis(), pendingIntent);
 
-        return receiver;
+        todoToAlarm.put(todo.getUniqueId(), receiver);
     }
 }

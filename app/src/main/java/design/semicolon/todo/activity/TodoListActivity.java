@@ -4,30 +4,30 @@ import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
-import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
+
 import design.semicolon.todo.R;
 import design.semicolon.todo.classes.AlarmNotifier;
 import design.semicolon.todo.fragment.TodoDetailFragment;
@@ -41,11 +41,12 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
     @Override
     protected void onResume(){
         super.onResume();
-        ((SimpleItemRecyclerViewAdapter)recyclerView.getAdapter()).notifyDataSetChanged();
+        ((SimpleItemRecyclerViewAdapter)recyclerView.getAdapter()).refreshDataSource();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_todo_list);
 
@@ -69,16 +70,36 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
 
             @Override
             public void onClick(View view) {
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(TodoListActivity.this);
-                alertDialogBuilder.setMessage("Are you sure you want to delete all your Todos?");
-                alertDialogBuilder.setPositiveButton("No", null);
-                alertDialogBuilder.setNegativeButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface arg0, int arg1) {
 
-                        ToDoManager.getInstance(TodoListActivity.this).deleteAll();
-                        ((SimpleItemRecyclerViewAdapter) recyclerView.getAdapter()).notifyDataSetChanged();
-                        Toast.makeText(TodoListActivity.this, "All Todos were erased", Toast.LENGTH_SHORT).show();
+                if (((SimpleItemRecyclerViewAdapter) recyclerView.getAdapter()).getItemCount() == 0) {
+                    return;
+                }
+
+                final CharSequence[] items = {"Delete expired items", "Delete done items", "Delete all items"};
+
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(TodoListActivity.this);
+                alertDialogBuilder.setTitle("What do you wish to delete?").setItems(items, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0: {
+                                ToDoManager.getInstance(TodoListActivity.this).deleteExpiredOnes();
+                                delayRefreshWithToast("Expired items deleted");
+                                break;
+                            }
+                            case 1: {
+                                ToDoManager.getInstance(TodoListActivity.this).deleteDoneItems();
+                                delayRefreshWithToast("Delete done items");
+                                break;
+                            }
+                            case 2: {
+                                ToDoManager.getInstance(TodoListActivity.this).deleteAll();
+                                delayRefreshWithToast("Deleted all items");
+                                break;
+                            }
+                            default: {
+                                break;
+                            }
+                        }
                     }
                 });
 
@@ -98,6 +119,17 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
 
         recyclerView = (RecyclerView) findViewById(R.id.todo_list);
         recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(ToDoManager.getInstance(TodoListActivity.this).listToDos()));
+    }
+
+    private void delayRefreshWithToast(final String toastMessage) {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+
+                ((SimpleItemRecyclerViewAdapter) recyclerView.getAdapter()).refreshDataSource();
+                Toast.makeText(TodoListActivity.this, toastMessage, Toast.LENGTH_SHORT).show();
+            }
+        }, 2000);
     }
 
     public void fireNotification(ToDo todo) {
@@ -127,26 +159,31 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
         notification.flags |= Notification.FLAG_AUTO_CANCEL;
 
         mNotificationManager.notify(0, notification);
+        ((SimpleItemRecyclerViewAdapter) recyclerView.getAdapter()).refreshDataSource();
     }
 
-    public class SimpleItemRecyclerViewAdapter
-            extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
+    public class SimpleItemRecyclerViewAdapter extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ToDoRecyclerItemView> {
 
-        private final List<ToDo> todoItems;
+        private List<ToDo> todoItems;
 
         public SimpleItemRecyclerViewAdapter(List<ToDo> todoItems) {
             this.todoItems = todoItems;
         }
 
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.todo_list_content, parent, false);
-            return new ViewHolder(view);
+        public void refreshDataSource () {
+            this.todoItems = ToDoManager.getInstance().listToDos();
+            notifyDataSetChanged();
         }
 
         @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
+        public ToDoRecyclerItemView onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.todo_list_content, parent, false);
+            return new ToDoRecyclerItemView(view);
+        }
+
+        @Override
+        public void onBindViewHolder(final ToDoRecyclerItemView holder, int position) {
 
             // The ToDo Item of importance
             holder.toDoItem = this.todoItems.get(position);
@@ -154,6 +191,7 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
             // Setting the content
             holder.mTitleView.setText(this.todoItems.get(position).getName());
             holder.mSubtitleView.setText(this.todoItems.get(position).getDueDateReadableFormat());
+            holder.mTrashTodoButton.setBackgroundColor(Color.TRANSPARENT);
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -170,6 +208,12 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
             } else {
                 holder.mMarkTodoButton.setBackgroundResource(R.drawable.unchecked_checkbox);
             }
+
+            if (!holder.toDoItem.isDone() && holder.toDoItem.isPastDue()) {
+                holder.mView.setBackgroundColor(0xFFFFE0E0);
+            } else {
+                holder.mView.setBackgroundColor(Color.WHITE);
+            }
         }
 
         @Override
@@ -177,7 +221,8 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
             return this.todoItems.size();
         }
 
-        public class ViewHolder extends RecyclerView.ViewHolder {
+        public class ToDoRecyclerItemView extends RecyclerView.ViewHolder {
+
             public final View mView;
             public final TextView mSubtitleView;
             public final TextView mTitleView;
@@ -186,7 +231,7 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
 
             public ToDo toDoItem;
 
-            public ViewHolder(View view) {
+            public ToDoRecyclerItemView(View view) {
                 super(view);
                 mView = view;
                 mTitleView = (TextView) view.findViewById(R.id.title);
@@ -194,15 +239,24 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
 
                 mTrashTodoButton = (ImageButton) view.findViewById(R.id.delete);
                 mTrashTodoButton.setOnClickListener(new View.OnClickListener() {
+
                     @Override
                     public void onClick(View v) {
                         ToDoManager.getInstance().deleteTodo(toDoItem);
-                        ((SimpleItemRecyclerViewAdapter)recyclerView.getAdapter()).notifyDataSetChanged();
+
+                        Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            public void run() {
+                                refreshDataSource();
+                                Toast.makeText(TodoListActivity.this, "Item was deleted", Toast.LENGTH_SHORT).show();
+                            }
+                        }, 500);
                     }
                 });
 
                 mMarkTodoButton = (ImageButton) view.findViewById(R.id.mark_done);
                 mMarkTodoButton.setOnClickListener(new View.OnClickListener() {
+
                     @Override
                     public void onClick(View v) {
 
@@ -212,8 +266,7 @@ public class TodoListActivity extends AppCompatActivity implements AlarmNotifier
                             ToDoManager.getInstance().markAsDone(toDoItem);
                         }
 
-                        // Refresh
-                        ((SimpleItemRecyclerViewAdapter) recyclerView.getAdapter()).notifyDataSetChanged();
+                        notifyDataSetChanged();
                     }
                 });
             }
